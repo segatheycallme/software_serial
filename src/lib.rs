@@ -37,7 +37,7 @@ impl SoftwareSerial {
             return false;
         }
 
-        let mut byte = 0u8;
+        let mut byte = 0;
         delay_us(self.rx_delay_centering);
         for _ in 0..8 {
             delay_us(self.rx_delay_intrabit);
@@ -47,12 +47,10 @@ impl SoftwareSerial {
             }
         }
         delay_us(self.rx_delay_stopbit);
-        let _ = self.buffer.enqueue(byte);
-
-        true
+        self.buffer.enqueue(byte).is_ok()
     }
-    pub fn read(&mut self) -> u8 {
-        unsafe { self.buffer.dequeue_unchecked() }
+    pub fn read(&mut self) -> Option<u8> {
+        self.buffer.dequeue()
     }
     pub fn flush(&mut self) {
         while self.buffer.dequeue().is_some() {}
